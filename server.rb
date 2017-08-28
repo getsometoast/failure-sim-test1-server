@@ -26,12 +26,12 @@ end
 get '/checkstatus/:ipaddress' do
   content_type :json
   num = rand(6) + 1
-  website = params[:ipaddress] #replace with IP
+  website = params[:ipaddress] 
 
   status = "500"
 
   begin
-    status = HTTP.timeout(:read => 2).get("https://" + website + "/buy").status.to_s
+    status = HTTP.timeout(:read => 2).get("http://" + website + "/health").status.to_s
   rescue HTTP::ConnectionError
     
   end
