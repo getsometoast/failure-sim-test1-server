@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'http'
 
 get '/health' do
   return 'OK'
@@ -25,6 +26,8 @@ end
 get '/checkstatus/:ipaddress' do
   content_type :json
   num = rand(6) + 1
-  # do http request here to the ipaddress/health...
-  { :num => num, :up => true, :cache => params["ipaddress"] }.to_json
+  website = "www.realestate.com.au" #replace with IP
+  status = HTTP.timeout(:read => 2).get("https://" + website + "/buy").status.to_s
+  up = status == "200 OK"
+  { :num => num, :up => up, :cache => params["ipaddress"], :status => status }.to_json
 end
