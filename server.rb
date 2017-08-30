@@ -34,13 +34,13 @@ get '/checkstatus/:ipaddress' do
 	status = "500"
 	begin
 		status = HTTP.timeout(:read => 2).get("http://" + website + "/health").status.to_s
-	rescue HTTP::ConnectionError
+	rescue HTTP::ConnectionError, Errno::ECONNRESET
 	end
 
 	staaa = "500"
 	begin
 		staaa = HTTP.timeout(:read => 2).get("http://" + website + "/cats").status.to_s
-  rescue HTTP::ConnectionError
+	rescue HTTP::ConnectionError, Errno::ECONNRESET
 	end
 
 	@uptime = current_uptime - 1 unless staaa == "200 OK"
