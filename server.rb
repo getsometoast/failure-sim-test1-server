@@ -25,27 +25,30 @@ get "/simulator/:ipaddress" do
 end
 
 get '/checkstatus/:ipaddress' do
-	content_type :json
-
-  website = params[:ipaddress]
-	current_uptime = params[:uptime].to_i
-	uptime = current_uptime
-
-	status = "500"
 	begin
-		status = HTTP.timeout(:read => 2).get("http://" + website + "/health").status.to_s
-	rescue HTTP::ConnectionError, Errno::ECONNRESET
+		content_type :json
+
+	  website = params[:ipaddress]
+		current_uptime = params[:uptime].to_i
+		uptime = current_uptime
+
+		status = "500"
+		begin
+			status = HTTP.timeout(:read => 2).get("http://" + website + "/health").status.to_s
+		rescue HTTP::ConnectionError, Errno::ECONNRESET, HTTP::TimeoutError
+		end
+
+		staaa = "500"
+		begin
+			staaa = HTTP.timeout(:read => 2).get("http://" + website + "/cats").status.to_s
+		rescue HTTP::ConnectionError, Errno::ECONNRESET, HTTP::TimeoutError
+		end
+
+		@uptime = current_uptime - 1 unless staaa == "200 OK"
+		@uptime = current_uptime if staaa == "200 OK"
+
+	  up = status == "200 OK"
+	  { :up => up, :cache => params["ipaddress"], :status => status, :uptime => @uptime }.to_json
+	rescue Errno::ECONNRESET
 	end
-
-	staaa = "500"
-	begin
-		staaa = HTTP.timeout(:read => 2).get("http://" + website + "/cats").status.to_s
-	rescue HTTP::ConnectionError, Errno::ECONNRESET
-	end
-
-	@uptime = current_uptime - 1 unless staaa == "200 OK"
-	@uptime = current_uptime if staaa == "200 OK"
-
-  up = status == "200 OK"
-  { :up => up, :cache => params["ipaddress"], :status => status, :uptime => @uptime }.to_json
 end
