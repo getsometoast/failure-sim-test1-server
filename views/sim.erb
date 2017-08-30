@@ -4,41 +4,46 @@
   </head>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
   <script>
-      var LongPoll = {
-        ask: function() {
-	  var url = '/checkstatus/'.concat($("#ipaddress").attr("value"));
+var LongPoll = {
+	ask: function(uptime) {
+		var url = '/checkstatus/'.concat($("#ipaddress").attr("value")) + "?uptime=" + uptime;
 
-          $.ajax({
-            url: url,
-            success: function(data) {
-	      console.log(data);
+		$.ajax({
+			url: url,
+			success: function(data) {
+				console.log(data);
+				console.log(data.uptime)
+				uptime = data.uptime;
+				$("#score p").text("Up Time: " + uptime + "%")
 
-	      if(data.up == true) {
-		$("body").css('background-color', 'green');
-		$("#test").text("STATUS: ONLINE");
-	      }
-	      else {
-		$("body").css('background-color', 'red');
-		$("#test").text("STATUS: OFFLINE");
-	      }
+				if(data.up == true) {
+					$("body").css('background-color', 'green');
+					$("#test").text("STATUS: ONLINE");
+				}
+				else {
+					$("body").css('background-color', 'red');
+					$("#test").text("STATUS: OFFLINE");
+				}
 
-              setTimeout(function() {
-		LongPoll.ask();
-	      }, 1000);
-            },
-            timeout: 1000
-          });
-        }
-      };
-      $(document).ready(function() {
+				setTimeout(function() {
+					LongPoll.ask(uptime);
+				}, 1000);
+			},
+			timeout: 1000
+		});
+	}
+};
+
+$(document).ready(function() {
 	console.log("HELLOOOOOO");
-        LongPoll.ask();
-      });
+	LongPoll.ask(100);
+});
   </script>
   <body>
     <h1>FAILURE SIM</p>
     <p>WelCoMe user <%= @ipaddress %> </p>
     <div id="ipaddress" style="display: none;" value="<%= @ipaddress %>"></div>
     <div id="test"><p>STATUS: ONLINE</p></div>
+		<div id="score" value="<%= @uptime %>"><p>Up Time: </p></div>
   </body>
 </html>

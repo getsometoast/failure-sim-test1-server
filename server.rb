@@ -18,24 +18,34 @@ post "/" do
   redirect "/simulator/" + params["ip-input"]
 end
 
-get "/simulator/:ipaddress" do 
+get "/simulator/:ipaddress" do
   @ipaddress = params["ipaddress"]
+	@uptime = 100
   erb :sim
 end
 
 get '/checkstatus/:ipaddress' do
-  content_type :json
-  num = rand(6) + 1
-  website = params[:ipaddress] 
+	content_type :json
 
-  status = "500"
+  website = params[:ipaddress]
+	current_uptime = params[:uptime].to_i
+	uptime = current_uptime
 
-  begin
-    status = HTTP.timeout(:read => 2).get("http://" + website + "/health").status.to_s
+	status = "500"
+	begin
+		status = HTTP.timeout(:read => 2).get("http://" + website + "/health").status.to_s
+	rescue HTTP::ConnectionError
+	end
+
+	staaa = "500"
+	begin
+		staaa = HTTP.timeout(:read => 2).get("http://" + website + "/cats").status.to_s
   rescue HTTP::ConnectionError
-    
-  end
+	end
+
+	@uptime = current_uptime - 1 unless staaa == "200 OK"
+	@uptime = current_uptime if staaa == "200 OK"
 
   up = status == "200 OK"
-  { :num => num, :up => up, :cache => params["ipaddress"], :status => status }.to_json
+  { :up => up, :cache => params["ipaddress"], :status => status, :uptime => @uptime }.to_json
 end
